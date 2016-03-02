@@ -39,7 +39,8 @@ global bootstrap
 ; Bootstrap function: called from Multiboot-compatible bootloader.
 ; Requires: eax to be set to 0x2badb002, ebx to point to the MB info structure.
 bootstrap:
-	cli				; Disable interrupts.
+	; Disable interrupts.
+	cli
 
 	; Check to make sure that this was indeed loaded by a Multiboot loader.
 	sub	eax, 0x2badb002		; Subtract the Multiboot magic signature from eax.
@@ -337,18 +338,13 @@ extern _data_phy_end
 
 ; Sets up long mode, brings CPU into compatibility mode.
 setup_lmode:
-	; Set PAE paging bit.
+	; Set PAE paging bit and PGE (global pages) bit.
 	mov	eax, cr4
-	or	eax, 1 << 5
-	mov	cr4, eax
-
-	; Set PGE (global pages) bit.
-	mov	eax, cr4
-	or	eax, 1<<7
+	or	eax, (1 << 5) + (1 << 7)
 	mov	cr4, eax
 
 	; Set the 9th bit of the EFER MSR to enable long mode.
-	mov	ecx, 0xc0000080
+	mov	ecx, 0xc0000080 ; EFER
 	rdmsr
 	or	eax, 1<<8
 	wrmsr
