@@ -1,5 +1,7 @@
 [BITS 32]
 
+extern kernel_pbase
+
 section .mb_header progbits
 ; Multiboot header values.
 
@@ -209,7 +211,7 @@ setup_paging:
 	jl	.low_map
 
 	; Continue with the bootstrap map...
-	mov	esi, 0x1000000
+	mov	esi, kernel_pbase
 	mov	edi, paging_id_bootstrap_p1
 .bootstrap_map:
 	; store physical address | 0x03.
