@@ -29,7 +29,7 @@ multiboot_header:
 	dd	bootstrap
 	; Load ending address. (0, load the entire file.)
 	dd	0
-	; BSS ending address. (0, no BSS segment.)
+	; BSS ending address. (0, no BSS segment. We'll handle the BSS.)
 	dd	0
 	; Entry point.
 	dd	bootstrap
@@ -43,9 +43,11 @@ bootstrap:
 	cli
 
 	; Check to make sure that this was indeed loaded by a Multiboot loader.
-	sub	eax, 0x2badb002		; Subtract the Multiboot magic signature from eax.
-	test	eax, eax		; Test eax.
-	jnz	error			; If the result is not zero, jump to the error symbol.
+	; Subtract the Multiboot magic signature from eax.
+	sub	eax, 0x2badb002
+	test	eax, eax
+	; If the result is not zero, jump to the error symbol.
+	jnz	error
 
 	; Set up the stack.
 	mov	esp, bootstrap_stack
@@ -115,12 +117,9 @@ realm64:
 [BITS 32]
 
 ; Extracts any useful/relevant information from the Multiboot header.
-; Requres: ebx to point to the beginning of the Multiboot info structure.
+; Requires: ebx to point to the beginning of the Multiboot info structure.
 ; Returns: Nothing directly; fills in the values of various global symbols.
 header_extract:
-	; Save ebx onto the stack for later use,
-	push	ebx
-
 	; First step: usable memory ranges.
 	mov	ecx, dword [ebx + 44]		; Grab the size . . .
 	mov	esi, dword [ebx + 48]		; . . . and the base address.
@@ -164,8 +163,6 @@ header_extract:
 	xor	eax, eax
 	mov	ecx, 4
 	rep	stosd
-
-	pop	ebx
 
 	ret
 
